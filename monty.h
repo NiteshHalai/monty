@@ -1,30 +1,31 @@
 #ifndef MONTY_H
 #define MONTY_H
-
-#include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <fcntl.h>
 
-#define INSTRUCTIONS              \
-	{                           \
-		{"push", push},       \
-		    {"pall", pall},   \
-		    {"pint", pint},   \
-		    {"pop", pop},     \
-		    {"swap", swap},   \
-		    {"nop", nop},     \
-		    {"div", _div},    \
-		    {"mul", _mul},    \
-		    {"add", _add},    \
-		    {"sub", _sub},    \
-		    {"mod", mod},     \
-		    {"pchar", pchar}, \
-		    {"pstr", pstr},   \
-		    {"rotl", rotl},   \
-		    {"rotr", rotr},   \
-		{                     \
-			NULL, NULL      \
-		}                     \
-	}
+/**monty errors defined*/
+#define MONTY_ERROR_NONE 0
+#define MONTY_ERROR_INVALID_OPCODE 1
+#define MONTY_ERROR_PUSH_MISSING_ARG 2
+#define MONTY_ERROR_PUSH_INVALID_ARG 3
+#define MONTY_ERROR_PINT_EMPTY 4
+#define MONTY_ERROR_POP_EMPTY 5
+
+
+typedef struct monty_s{
+  char  *save_ptr;
+  int line;
+  char *token;
+  int mode;
+  int error;
+}monty_t;
+
+extern char* operand;
 
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
@@ -33,7 +34,7 @@
  * @next: points to the next element of the stack (or queue)
  *
  * Description: doubly linked list node structure
- * for stack, queues, LIFO, FIFO
+ * for stack, queues, LIFO, FIFO Holberton project
  */
 typedef struct stack_s
 {
@@ -48,7 +49,7 @@ typedef struct stack_s
  * @f: function to handle the opcode
  *
  * Description: opcode and its function
- * for stack, queues, LIFO, FIFO
+ * for stack, queues, LIFO, FIFO Holberton project
  */
 typedef struct instruction_s
 {
@@ -57,46 +58,31 @@ typedef struct instruction_s
 } instruction_t;
 
 /**
-* struct help - argument for the current opcode
-* @data_struct: stack mode, stack (default) and queue
-* @argument: the arguments of the string
-*
-* Description: global structure used to pass data around the functions easily
-*/
-typedef struct help
+ * struct line_s - line content and its number
+ * @content: line content
+ * @number: line number 
+ *
+ * Description: stores line of the monty source code
+ */
+typedef struct line_s
 {
-	int data_struct;
-	char *argument;
-} help;
-help global;
+	char *content;
+	int number;
+} line_t;
 
-/* stack utility functions available in linked_list.c */
-stack_t *add_node(stack_t **stack, const int n);
-stack_t *queue_node(stack_t **stack, const int n);
-void free_stack(stack_t *stack);
-size_t print_stack(const stack_t *stack);
+line_t *textfile_to_array(const char *filename);
+void op_push(stack_t **stack, unsigned int line_number);
+void op_pall(stack_t **stack, unsigned int line_number);
+void op_pint(stack_t **stack, unsigned int line_number);
+void op_pop(stack_t **stack, unsigned int line_number);
+void op_swap(stack_t **stack, unsigned int line_number);
 
-void push(stack_t **stack, unsigned int line_cnt);
-void pall(stack_t **stack, unsigned int line_cnt);
-void pint(stack_t **stack, unsigned int line_cnt);
-void swap(stack_t **stack, unsigned int line_cnt);
-void pop(stack_t **stack, unsigned int line_cnt);
-void nop(stack_t **stack, unsigned int line_cnt);
+char **split_line(char *line);
+void (*get_op_func(char *s))(stack_t**, unsigned int);
 
-void _div(stack_t **stack, unsigned int line_cnt);
-void _add(stack_t **stack, unsigned int line_cnt);
-void _sub(stack_t **stack, unsigned int line_cnt);
-void _mul(stack_t **stack, unsigned int line_cnt);
-void mod(stack_t **stack, unsigned int line_cnt);
 
-void pchar(stack_t **stack, unsigned int line_cnt);
-void pstr(stack_t **stack, unsigned int line_cnt);
-void rotl(stack_t **stack, unsigned int line_count);
-void rotr(stack_t **stack, unsigned int line_count);
+void free_lines(line_t *head);
+void free_stack(stack_t *head);
+int _atoi(char *s, int* n);
 
-void opcode(stack_t **stack, char *str, unsigned int line_cnt);
-
-int is_digit(char *string);
-int isnumber(char *str);
-
-#endif /* MONTY_H */
+#endif
